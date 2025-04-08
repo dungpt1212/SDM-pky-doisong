@@ -1,0 +1,19 @@
+//@version=5
+indicator("Pivot High/Low Indicator (Fractal Style)", overlay=true)
+
+// Hàm kiểm tra Pivot High
+isPivotHigh() =>
+    high[1] > high[2] and high[1] > high[0] // Kiểm tra nến hiện tại và hai nến bên cạnh
+    // Nếu muốn thêm điều kiện nâng cao, có thể mở lại và bổ sung vào đây
+
+// Hàm kiểm tra Pivot Low
+isPivotLow() =>
+    low[1] < low[2] and low[1] < low[0]  // Kiểm tra nến hiện tại và hai nến bên cạnh
+    // Nếu muốn thêm điều kiện nâng cao, có thể mở lại và bổ sung vào đây
+
+// Tính toán tại từng nến và dùng offset để hiển thị tại đúng nến pivot
+ph = isPivotHigh()
+pl = isPivotLow()
+
+plotshape(ph, title="Pivot High", location=location.abovebar, style=shape.triangledown, color=color.red, size=size.tiny, offset=-1)
+plotshape(pl, title="Pivot Low", location=location.belowbar, style=shape.triangleup, color=color.green, size=size.tiny, offset=-1)
