@@ -1,0 +1,66 @@
+//@version=5
+indicator("Pivot High/Low Indicator (Fractal Style + Choch)", overlay=true)
+
+// ==== CÀI ĐẶT NGƯỜI DÙNG ====
+showPivotHigh = input.bool(true, "Hiển thị Pivot High + Choch High")
+showPivotLow  = input.bool(true, "Hiển thị Pivot Low + Choch Low")
+
+colorPivotHigh = input.color(color.green, "Màu Choch Pivot High")
+colorPivotLow  = input.color(color.red, "Màu Choch Pivot Low")
+
+chochLabelText = input.string("Choch", "Chữ hiển thị trên line")
+
+// ==== HÀM PIVOT ====
+isPivotHigh() =>
+    high[1] > high[2] and high[1] > high[0]
+
+isPivotLow() =>
+    low[1] < low[2] and low[1] < low[0]
+
+// ==== PHÁT HIỆN PIVOT ====
+ph = isPivotHigh()
+pl = isPivotLow()
+
+// ==== LƯU TRẠNG THÁI PIVOT GẦN NHẤT ====
+var float pivotHighPrice = na
+var int pivotHighBarIndex = na
+var bool pivotHighTriggered = false
+
+var float pivotLowPrice = na
+var int pivotLowBarIndex = na
+var bool pivotLowTriggered = false
+
+// ==== CẬP NHẬT PIVOT ====
+if ph and showPivotHigh
+    pivotHighPrice := high[1]
+    pivotHighBarIndex := bar_index[1]
+    pivotHighTriggered := false
+
+if pl and showPivotLow
+    pivotLowPrice := low[1]
+    pivotLowBarIndex := bar_index[1]
+    pivotLowTriggered := false
+
+// ==== KIỂM TRA CHOCH HIGH ====
+chochHighSignal = showPivotHigh and not pivotHighTriggered and not na(pivotHighPrice) and close > pivotHighPrice and bar_index > pivotHighBarIndex
+if chochHighSignal
+    line.new(x1=pivotHighBarIndex, y1=pivotHighPrice, x2=bar_index, y2=pivotHighPrice, color=colorPivotHigh, style=line.style_dashed, width=1)
+    midBar = math.floor((pivotHighBarIndex + bar_index) / 2)
+    label.new(x=midBar, y=pivotHighPrice, text=chochLabelText, style=label.style_none, textcolor=colorPivotHigh, size=size.small, textalign=text.align_center, tooltip="")
+    pivotHighTriggered := true
+
+// ==== KIỂM TRA CHOCH LOW ====
+chochLowSignal = showPivotLow and not pivotLowTriggered and not na(pivotLowPrice) and close < pivotLowPrice and bar_index > pivotLowBarIndex
+if chochLowSignal
+    line.new(x1=pivotLowBarIndex, y1=pivotLowPrice, x2=bar_index, y2=pivotLowPrice, color=colorPivotLow, style=line.style_dashed, width=1)
+    midBar = math.floor((pivotLowBarIndex + bar_index) / 2)
+    label.new(x=midBar, y=pivotLowPrice, text=chochLabelText, style=label.style_none, textcolor=colorPivotLow, size=size.small, textalign=text.align_center, tooltip="")
+    pivotLowTriggered := true
+
+// ==== HIỂN THỊ DẤU PIVOT ====
+plotshape(ph and showPivotHigh, title="Pivot High", location=location.abovebar, style=shape.triangledown, color=color.red, size=size.tiny, offset=-1)
+plotshape(pl and showPivotLow, title="Pivot Low", location=location.belowbar, style=shape.triangleup, color=color.green, size=size.tiny, offset=-1)
+
+// ==== THÔNG BÁO CHOCH ====
+alertcondition(chochHighSignal, title="CHoCH High", message="CHoCH High xuất hiện!")
+alertcondition(chochLowSignal, title="CHoCH Low", message="CHoCH Low xuất hiện!")
